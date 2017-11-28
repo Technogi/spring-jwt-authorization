@@ -113,5 +113,5 @@ open class JwtUserDetails(val claims: Claims) : UserDetails {
 
 }
 
-data class JWTConfig(val secret: String, val header: String)
-data class SecurityConfig(val jwt: JWTConfig)
+data class JWTConfig(var secret: String, var header: String)
+data class SecurityConfig(var jwt: JWTConfig)
