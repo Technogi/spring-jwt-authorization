@@ -19,9 +19,10 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 
-abstract class AuthorizationModule(val config: SecurityConfig) : WebSecurityConfigurerAdapter() {
+abstract class AuthorizationModule() : WebSecurityConfigurerAdapter() {
     abstract fun deserializeToken(claims: Claims): JwtAuthenticationToken
     abstract fun config(httpSecurity: HttpSecurity?)
+    abstract fun getConfig(): SecurityConfig
 
     override final fun configure(http: HttpSecurity?) {
 
@@ -37,7 +38,7 @@ abstract class AuthorizationModule(val config: SecurityConfig) : WebSecurityConf
 
         http
           .addFilterBefore(
-            JWTAuthenticationTokenFilter(config, this::deserializeToken),
+            JWTAuthenticationTokenFilter(getConfig(), this::deserializeToken),
             UsernamePasswordAuthenticationFilter::class.java)
           .headers().cacheControl()
     }

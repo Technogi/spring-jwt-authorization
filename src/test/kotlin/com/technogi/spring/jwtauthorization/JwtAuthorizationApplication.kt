@@ -38,7 +38,8 @@ fun main(args: Array<String>) {
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
-class SecurityConfiguration : AuthorizationModule(SecurityConfiguration.secConfig) {
+class SecurityConfiguration : AuthorizationModule() {
+    override fun getConfig()= SecurityConfiguration.secConfig
 
     companion object {
         val secConfig = SecurityConfig(JWTConfig("SUPERSECRETO", "X-AUTHME"))
