@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.web.filter.OncePerRequestFilter
+import java.lang.Exception
 import java.security.SignatureException
 import java.util.*
 import javax.servlet.FilterChain
@@ -21,6 +22,7 @@ import javax.servlet.http.HttpServletResponse
 
 abstract class AuthorizationModule() : WebSecurityConfigurerAdapter() {
     abstract fun deserializeToken(claims: Claims): JwtAuthenticationToken
+    @Throws(Exception::class)
     abstract fun config(httpSecurity: HttpSecurity?)
     abstract fun getConfig(): SecurityConfig
 
@@ -49,7 +51,7 @@ class JWTAuthenticationTokenFilter(val config: SecurityConfig, val jwtParseFunc:
     val log = LoggerFactory.getLogger(this.javaClass)
     override fun doFilterInternal(request: HttpServletRequest?, response: HttpServletResponse?, filterChain: FilterChain?) {
         log.trace("Validating user")
-        var authToken = request?.getHeader(this.config.jwt.header)
+        var authToken = request?.getHeader(this.config.jwt?.header)
 
         if (authToken != null) {
             authToken = authToken.substring(7)
@@ -81,7 +83,7 @@ class JWTAuthenticationTokenFilter(val config: SecurityConfig, val jwtParseFunc:
 
     private fun parseToken(token: String): JwtAuthenticationToken {
         val claims = Jwts.parser()
-          .setSigningKey(config.jwt.secret.toByteArray())
+          .setSigningKey(config.jwt?.secret?.toByteArray())
           .parseClaimsJws(token)
           .getBody()
         log.debug("Decoded claims {}", claims)
@@ -113,5 +115,9 @@ open class JwtUserDetails(val claims: Claims) : UserDetails {
 
 }
 
-data class JWTConfig(var secret: String, var header: String)
-data class SecurityConfig(var jwt: JWTConfig)
+data class JWTConfig(var secret: String?, var header: String?){
+    constructor():this(null,null){}
+}
+data class SecurityConfig(var jwt: JWTConfig?){
+    constructor(): this(null){}
+}
