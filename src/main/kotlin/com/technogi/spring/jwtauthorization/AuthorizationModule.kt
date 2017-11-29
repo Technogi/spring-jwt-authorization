@@ -121,7 +121,7 @@ open class JwtUserDetails(val claims: Claims) : UserDetails {
     override fun isEnabled() = true
     override fun getUsername() = claims.subject
     override fun isCredentialsNonExpired() = claims.expiration.before(Date())
-    override fun getPassword() = null
+    override fun getPassword(): String? = null
 
     override fun isAccountNonExpired() = true
     override fun isAccountNonLocked() = true
