@@ -58,9 +58,15 @@ class JWTAuthenticationTokenFilter(val config: SecurityConfig, val jwtParseFunc:
             val authToken = authHeader.substring(7)
             log.debug("Parsing token {}", authToken)
             try {
+                log.debug("Creating Authentication")
                 val authentication = parseToken(authToken)
+                log.trace("authentication:{}",authentication);
+                log.debug("Generating authentication Details")
                 authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
+                log.trace("details: {}",authentication.details)
+                log.trace("Adding to security Context")
                 SecurityContextHolder.getContext().authentication = authentication
+                log.trace("Security Context set up")
             } catch (e: SignatureException) {
                 log.info("Invalid JWT signature.")
                 log.trace("Invalid JWT signature trace: {}", e)
@@ -97,6 +103,9 @@ class JWTAuthenticationTokenFilter(val config: SecurityConfig, val jwtParseFunc:
 
 abstract class JwtAuthenticationToken(userDetails: JwtUserDetails) : UsernamePasswordAuthenticationToken(userDetails, null) {
 
+    override fun toString(): String {
+        return "JwtAuthenticationToken() ${super.toString()}"
+    }
 }
 
 

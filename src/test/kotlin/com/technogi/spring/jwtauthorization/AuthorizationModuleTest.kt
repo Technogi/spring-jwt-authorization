@@ -104,6 +104,7 @@ class AuthorizationModuleTest {
           .setClaims(mapOf("rfc" to "hemc809023ert", "policy" to "123457", "roles" to arrayOf("ADMIN")))
           .signWith(SignatureAlgorithm.HS512, SecurityConfiguration.secConfig.jwt?.secret?.toByteArray())
           .compact()
+        println(token)
         mockMvc.perform(get("/secured").header(SecurityConfiguration.secConfig.jwt?.header,"bearer $token"))
           .andExpect { status().is2xxSuccessful }
           .andExpect { content().string("Responded with role") }
