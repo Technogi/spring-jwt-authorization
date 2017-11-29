@@ -79,6 +79,7 @@ class JWTAuthenticationTokenFilter(val config: SecurityConfig, val jwtParseFunc:
             }
 
         }
+        log.trace("Security: {}",SecurityContextHolder.getContext().authentication)
         filterChain?.doFilter(request, response)
     }
 
