@@ -24,6 +24,7 @@ abstract class AuthorizationModule() : WebSecurityConfigurerAdapter() {
     abstract fun deserializeToken(claims: Claims): JwtAuthenticationToken
     @Throws(Exception::class)
     abstract fun config(httpSecurity: HttpSecurity?)
+
     abstract fun getConfig(): SecurityConfig
 
     override final fun configure(http: HttpSecurity?) {
@@ -51,10 +52,10 @@ class JWTAuthenticationTokenFilter(val config: SecurityConfig, val jwtParseFunc:
     val log = LoggerFactory.getLogger(this.javaClass)
     override fun doFilterInternal(request: HttpServletRequest?, response: HttpServletResponse?, filterChain: FilterChain?) {
         log.trace("Validating user")
-        var authToken = request?.getHeader(this.config.jwt?.header)
-
-        if (authToken != null) {
-            authToken = authToken.substring(7)
+        val authHeader = request?.getHeader(this.config.jwt?.header)
+        log.trace("Got header {}", authHeader)
+        if (authHeader != null && authHeader.length >= 7) {
+            val authToken = authHeader.substring(7)
             log.debug("Parsing token {}", authToken)
             try {
                 val authentication = parseToken(authToken)
@@ -86,7 +87,7 @@ class JWTAuthenticationTokenFilter(val config: SecurityConfig, val jwtParseFunc:
           .setSigningKey(config.jwt?.secret?.toByteArray())
           .parseClaimsJws(token)
           .getBody()
-        log.debug("Decoded claims {}", claims)
+        log.trace("Decoded claims {}", claims)
 
         return jwtParseFunc(claims)
     }
@@ -115,9 +116,10 @@ open class JwtUserDetails(val claims: Claims) : UserDetails {
 
 }
 
-data class JWTConfig(var secret: String?, var header: String?){
-    constructor():this(null,null){}
+data class JWTConfig(var secret: String?, var header: String?) {
+    constructor() : this(null, null) {}
 }
-data class SecurityConfig(var jwt: JWTConfig?){
-    constructor(): this(null){}
+
+data class SecurityConfig(var jwt: JWTConfig?) {
+    constructor() : this(null) {}
 }

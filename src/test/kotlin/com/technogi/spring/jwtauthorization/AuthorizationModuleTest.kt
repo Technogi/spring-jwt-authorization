@@ -40,11 +40,11 @@ class AuthorizationModuleTest {
         val token = Jwts.builder()
           .setSubject("Joe")
           .setClaims(mapOf("rfc" to "hemc809023ert", "policy" to "123457", "roles" to arrayOf("NOADMIN")))
-          .signWith(SignatureAlgorithm.HS512, SecurityConfiguration.secConfig.jwt.secret.toByteArray())
+          .signWith(SignatureAlgorithm.HS512, SecurityConfiguration.secConfig.jwt?.secret?.toByteArray())
           .compact()
 
 
-        mockMvc.perform(get("/secured").header(SecurityConfiguration.secConfig.jwt.header,"bearer $token"))
+        mockMvc.perform(get("/secured").header(SecurityConfiguration.secConfig.jwt?.header,"bearer $token"))
           .andExpect { status().isUnauthorized }
 
     }
@@ -62,9 +62,9 @@ class AuthorizationModuleTest {
         val token = Jwts.builder()
           .setSubject("Joe")
           .setClaims(mapOf("rfc" to "hemc809023ert", "policy" to "123457"))
-          .signWith(SignatureAlgorithm.HS512, SecurityConfiguration.secConfig.jwt.secret.toByteArray())
+          .signWith(SignatureAlgorithm.HS512, SecurityConfiguration.secConfig.jwt?.secret?.toByteArray())
           .compact()
-        mockMvc.perform(get("/secured").header(SecurityConfiguration.secConfig.jwt.header,"bearer $token"))
+        mockMvc.perform(get("/secured").header(SecurityConfiguration.secConfig.jwt?.header,"bearer $token"))
           .andExpect { status().is2xxSuccessful }
           .andExpect { content().string("Secured") }
 
@@ -76,9 +76,9 @@ class AuthorizationModuleTest {
         val token = Jwts.builder()
           .setSubject("Joe")
           .setClaims(mapOf("rfc" to "hemc809023ert", "policy" to "123457"))
-          .signWith(SignatureAlgorithm.HS512, SecurityConfiguration.secConfig.jwt.secret.toByteArray())
+          .signWith(SignatureAlgorithm.HS512, SecurityConfiguration.secConfig.jwt?.secret?.toByteArray())
           .compact()
-        mockMvc.perform(get("/secured").header(SecurityConfiguration.secConfig.jwt.header,"bearer $token"))
+        mockMvc.perform(get("/secured").header(SecurityConfiguration.secConfig.jwt?.header,"bearer $token"))
           .andExpect { status().isUnauthorized }
 
     }
@@ -89,9 +89,9 @@ class AuthorizationModuleTest {
         val token = Jwts.builder()
           .setSubject("Joe")
           .setClaims(mapOf("rfc" to "hemc809023ert", "policy" to "123457", "roles" to arrayOf("NOADMIN")))
-          .signWith(SignatureAlgorithm.HS512, SecurityConfiguration.secConfig.jwt.secret.toByteArray())
+          .signWith(SignatureAlgorithm.HS512, SecurityConfiguration.secConfig.jwt?.secret?.toByteArray())
           .compact()
-        mockMvc.perform(get("/requires-role").header(SecurityConfiguration.secConfig.jwt.header,"bearer $token"))
+        mockMvc.perform(get("/requires-role").header(SecurityConfiguration.secConfig.jwt?.header,"bearer $token"))
           .andExpect { status().isUnauthorized }
 
     }
@@ -102,11 +102,24 @@ class AuthorizationModuleTest {
         val token = Jwts.builder()
           .setSubject("Joe")
           .setClaims(mapOf("rfc" to "hemc809023ert", "policy" to "123457", "roles" to arrayOf("ADMIN")))
-          .signWith(SignatureAlgorithm.HS512, SecurityConfiguration.secConfig.jwt.secret.toByteArray())
+          .signWith(SignatureAlgorithm.HS512, SecurityConfiguration.secConfig.jwt?.secret?.toByteArray())
           .compact()
-        mockMvc.perform(get("/secured").header(SecurityConfiguration.secConfig.jwt.header,"bearer $token"))
+        mockMvc.perform(get("/secured").header(SecurityConfiguration.secConfig.jwt?.header,"bearer $token"))
           .andExpect { status().is2xxSuccessful }
           .andExpect { content().string("Responded with role") }
+
+    }
+
+    @Test
+    fun test_invalid_token() {
+
+        val token = "344"+Jwts.builder()
+          .setSubject("Joe")
+          .setClaims(mapOf("rfc" to "hemc809023ert", "policy" to "123457", "roles" to arrayOf("ADMIN")))
+          .signWith(SignatureAlgorithm.HS512, SecurityConfiguration.secConfig.jwt?.secret?.toByteArray())
+          .compact()+"344"
+        mockMvc.perform(get("/secured").header(SecurityConfiguration.secConfig.jwt?.header,"bearer $token"))
+          .andExpect { status().isForbidden }
 
     }
 }
