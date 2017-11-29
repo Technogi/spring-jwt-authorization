@@ -1,6 +1,8 @@
 package com.technogi.spring.jwtauthorization
 
 import io.jsonwebtoken.Claims
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.SignatureAlgorithm
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Configuration
@@ -33,6 +35,11 @@ class JwtAuthorizationApplication {
 
 fun main(args: Array<String>) {
     SpringApplication.run(JwtAuthorizationApplication::class.java, *args)
+    println("Sample Token: "+ Jwts.builder()
+      .setSubject("Joe")
+      .setClaims(mapOf("rfc" to "hemc809023ert", "policy" to "123457"))
+      .signWith(SignatureAlgorithm.HS512, "SUPERSECRETO".toByteArray())
+      .compact())
 }
 
 @Configuration

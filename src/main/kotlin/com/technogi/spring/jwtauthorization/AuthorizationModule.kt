@@ -18,6 +18,7 @@ import java.util.*
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import kotlin.collections.ArrayList
 
 
 abstract class AuthorizationModule() : WebSecurityConfigurerAdapter() {
@@ -60,10 +61,10 @@ class JWTAuthenticationTokenFilter(val config: SecurityConfig, val jwtParseFunc:
             try {
                 log.debug("Creating Authentication")
                 val authentication = parseToken(authToken)
-                log.trace("authentication:{}",authentication);
+                log.trace("authentication:{}", authentication);
                 log.debug("Generating authentication Details")
                 authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
-                log.trace("details: {}",authentication.details)
+                log.trace("details: {}", authentication.details)
                 log.trace("Adding to security Context")
                 SecurityContextHolder.getContext().authentication = authentication
                 log.trace("Security Context set up")
@@ -85,7 +86,7 @@ class JWTAuthenticationTokenFilter(val config: SecurityConfig, val jwtParseFunc:
             }
 
         }
-        log.trace("Security: {}",SecurityContextHolder.getContext().authentication)
+        log.trace("Security: {}", SecurityContextHolder.getContext().authentication)
         filterChain?.doFilter(request, response)
     }
 
@@ -101,8 +102,7 @@ class JWTAuthenticationTokenFilter(val config: SecurityConfig, val jwtParseFunc:
 
 }
 
-abstract class JwtAuthenticationToken(userDetails: JwtUserDetails) : UsernamePasswordAuthenticationToken(userDetails, null) {
-
+abstract class JwtAuthenticationToken(val userDetails: JwtUserDetails?) : UsernamePasswordAuthenticationToken(userDetails, null, userDetails?.authorities) {
     override fun toString(): String {
         return "JwtAuthenticationToken() ${super.toString()}"
     }
@@ -110,16 +110,18 @@ abstract class JwtAuthenticationToken(userDetails: JwtUserDetails) : UsernamePas
 
 
 open class JwtUserDetails(val claims: Claims) : UserDetails {
-    override fun getAuthorities() =
-      claims.get("roles", Array<String>::class.java).map { GrantedAuthority { it } }.toMutableList()
+    override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
+        if (claims.containsKey("roles"))
+            return claims.get("roles", ArrayList::class.java).map { GrantedAuthority { it.toString() } }.toMutableList()
+        else
+            return emptyList<GrantedAuthority>().toMutableList()
+    }
 
 
     override fun isEnabled() = true
     override fun getUsername() = claims.subject
     override fun isCredentialsNonExpired() = claims.expiration.before(Date())
-    override fun getPassword(): String {
-        throw NotImplementedError()
-    }
+    override fun getPassword() = null
 
     override fun isAccountNonExpired() = true
     override fun isAccountNonLocked() = true
